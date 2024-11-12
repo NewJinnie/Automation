@@ -12,8 +12,8 @@ from common.output_csv import run as output_csv
 import pandas as pd
 import xlwings as xw
 
+# パスワードなどの環境変数のインポート
 load_dotenv(".env")
-
 OKTA_TOTP_SECRET_KEY = os.getenv("OKTA_TOTP_SECRET_KEY")
 OKTA_PASSWORD = os.getenv("OKTA_PASSWORD")
 okta_totp = pyotp.TOTP(OKTA_TOTP_SECRET_KEY)
@@ -23,30 +23,26 @@ year_str = str(dt_now.year)
 month_str = str(dt_now.month - 1).zfill(2)
 year_month_str = year_str + month_str
 
-download_folder = "C:\\Users\\shinya.arai\\Downloads\\"
-# charge_je_csv_path = download_folder + "Edge請求仕訳" + year_month_str + ".csv"
-charge_je_csv_path = download_folder + "results (87).csv"
-
 # 作業ファイル定義
 work_file_folder = "C:\\Users\\shinya.arai\\Box\\経理\\12_Uzabase USA,Inc\\002_売上\\5_計上、前受振替\\" + year_str + "\\" + year_str + "." + month_str + "\\日本販売\\"
 work_file_name = "SPEdge_日本販売_計上資料_" + year_month_str + ".xlsx"
 work_file_path = work_file_folder + work_file_name
 csv_sheet_num = 1
 
+download_folder = "C:\\Users\\shinya.arai\\Downloads\\"
+# charge_je_csv_path = download_folder + "Edge請求仕訳" + year_month_str + ".csv"
+charge_je_csv_path = download_folder + "results (87).csv"
+
 # 仕訳CSVをNetsuiteにインポートする関数
 def netsuite():
     with sync_playwright() as playwright:
         netsuite_import(playwright=playwright, file_path=charge_je_csv_path)
 
-# 仕訳CSVを作成する関数
-def generate_csv():
-    output_csv(work_file_path=work_file_path, sheet_num=csv_sheet_num)
-
 function_map = {
     "ns": netsuite,
-    "csv": generate_csv
 }
 
+# メイン関数
 def run(playwright: Playwright) -> None:
 
     # ブラウザを立ち上げ、Salesforceへログイン
@@ -98,23 +94,24 @@ def run(playwright: Playwright) -> None:
     df_pivot = downloaded_df.pivot_table(index=indexes, values=values)
     
     # データを作業ファイルに貼付
-    work_file_wb = openpyxl.load_workbook(work_file_path)
-    work_file_sheet_names = work_file_wb.sheetnames
-    ws_for_paste = work_file_wb[work_file_sheet_names[0]]
-
+    wb = openpyxl.load_workbook(work_file_path)
+    ws_for_paste = wb[wb.sheetnames[0]]
     ws_for_paste.delete_rows(1, ws_for_paste.max_row)
 
     for row in dataframe_to_rows(df_pivot, index=True, header=True):
         ws_for_paste.append(row)
 
     # 上書き保存
-    work_file_wb.save(work_file_path)
+    wb.save(work_file_path)
 
     # excel内の数式を動かすためにバックグラウンドでexcelを開いて閉じる
     with xw.App(visible=False) as app:
         wb = app.books.open(work_file_path)
         wb.save()
         wb.close()
+
+    # 仕訳CSVを出力する
+    output_csv(work_file_path=work_file_path, sheet_num=csv_sheet_num)
 
     # ---------------------
     context.close()
