@@ -1,8 +1,8 @@
 .env
-__init__
+__init__.py
 
 common/__pycache__
-common/__init__
+common/__init__.py
 
 sp_edge_japan_sales/__pycache__
-sp_edge_japan_sales/__init__
+sp_edge_japan_sales/__init__.py
