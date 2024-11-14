@@ -54,11 +54,11 @@ def run(playwright: Playwright, file_path) -> None:
     page.get_by_role("link", name="Production_仕訳Import").click()
     page.locator("#fileupload0").set_input_files(file_path)
     page.get_by_role("button", name="次へ >").click()
-    page.wait_for_timeout(2000) # アラートが表示されるので念のため3秒待機
+    page.wait_for_timeout(2000) 
     page.get_by_role("button", name="次へ >").click()
-    page.wait_for_timeout(2000) # アラートが表示されるので念のため3秒待機
+    page.wait_for_timeout(2000) 
     page.get_by_role("button", name="次へ >").click()
-    page.wait_for_timeout(2000) # アラートが表示されるので念のため3秒待機
+    page.wait_for_timeout(2000)
     page.get_by_role("cell", name="名前をつけて保存&実行", exact=True).get_by_role("img").click()
     page.get_by_role("link", name="実行").click()
     page.wait_for_timeout(3000) # アラートが表示されるので念のため3秒待機
