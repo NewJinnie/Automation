@@ -18,6 +18,7 @@ OKTA_TOTP_SECRET_KEY = os.getenv("OKTA_TOTP_SECRET_KEY")
 OKTA_PASSWORD = os.getenv("OKTA_PASSWORD")
 okta_totp = pyotp.TOTP(OKTA_TOTP_SECRET_KEY)
 
+# 該当年月の取得
 dt_now = datetime.datetime.now()
 year_str = str(dt_now.year)
 month_str = str(dt_now.month - 1).zfill(2)
@@ -29,9 +30,9 @@ work_file_name = "SPEdge_日本販売_計上資料_" + year_month_str + ".xlsx"
 work_file_path = work_file_folder + work_file_name
 csv_sheet_num = 1
 
+# 仕訳CSVの場所の定義
 download_folder = "C:\\Users\\shinya.arai\\Downloads\\"
-# charge_je_csv_path = download_folder + "Edge請求仕訳" + year_month_str + ".csv"
-charge_je_csv_path = download_folder + "results (87).csv"
+charge_je_csv_path = download_folder + "Edge請求仕訳" + year_month_str + ".csv"
 
 # 仕訳CSVをNetsuiteにインポートする関数
 def netsuite():
@@ -104,14 +105,14 @@ def run(playwright: Playwright) -> None:
     # 上書き保存
     wb.save(work_file_path)
 
-    # excel内の数式を動かすためにバックグラウンドでexcelを開いて閉じる
+    # excel内の数式を動かすためにバックグラウンドでexcelを開いて保存して閉じる
     with xw.App(visible=False) as app:
         wb = app.books.open(work_file_path)
         wb.save()
         wb.close()
 
     # 仕訳CSVを出力する
-    output_csv(work_file_path=work_file_path, sheet_num=csv_sheet_num)
+    output_csv(work_file_path=work_file_path, sheet_num=csv_sheet_num, output_csv_path=charge_je_csv_path)
 
     # ---------------------
     context.close()
